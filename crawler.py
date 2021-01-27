@@ -42,10 +42,10 @@ def is_link_interesting(this_link, base_url, url, logger):
         return
     try:
         if this_link.startswith('/'):
-            endpoints[url].add(base_url+this_link[1:])
+            insert_url_into_endpoints_dict(url, base_url+this_link[1:])
             insert_url_into_crawl_target_set(base_url+this_link[1:])
         elif this_link.startswith(base_url):
-            endpoints[url].add(this_link)
+            insert_url_into_endpoints_dict(url, this_link)
             insert_url_into_crawl_target_set(this_link)
         # else:
         #     logger.warning(f'Out-of-scope link: {str(this_link)}')
