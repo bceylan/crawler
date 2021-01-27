@@ -1,9 +1,9 @@
-from urllib.parse import urlsplit
+import logging
 from threading import Thread, Lock
 from queue import Queue
+from urllib.parse import urlsplit
 import pprint
 from time import sleep
-import logging
 
 import click
 import requests
@@ -18,6 +18,7 @@ REQUESTS_BACKOFF_FACTOR = 1
 
 
 class Crawler(object):
+
     def __init__(self, url, num_threads, output, all_links):
         self.endpoints = dict()
         self.to_crawl = Queue()
@@ -25,7 +26,7 @@ class Crawler(object):
         self.crawl_set = set()
         self.lock = Lock()
 
-        # Create logger object
+        # Logger
         self.logger = logging.getLogger('crawler')
         self.logger.setLevel(logging.DEBUG)
         file_handler = logging.FileHandler('crawler.log')
@@ -46,6 +47,7 @@ class Crawler(object):
         self.base_url = f'{parsed_url.scheme}://{parsed_url.netloc}/'
 
     def start(self):
+        """Starts crawling target URL."""
         self.logger.info('Starting crawler...')
         self.logger.info(f'URL: {str(self.url)}')
         self.logger.info(f'Number of threads: {str(self.num_threads)}')
@@ -74,23 +76,21 @@ class Crawler(object):
         for thread in crawler_threads:
             thread.join()
 
-    def print_results(self):
-        # Print the result to a file and also to standard output.
-        self.print_results_to_file(self.endpoints, self.output)
-        self.print_results_to_stdout(self.endpoints)
-
     def insert_url_into_endpoints_dict(self, url, url2=None):
+        """Inserts the url into final results."""
         if url not in self.endpoints:
             self.endpoints[url] = set()
         if url2 is not None:
             self.endpoints[url].add(url2)
 
     def insert_url_into_crawl_target_set(self, url):
+        """Inserts the url into crawl queue."""
         if url not in self.crawl_set:
             self.crawl_set.add(url)
             self.to_crawl.put(url)
 
     def is_link_interesting(self, this_link, base_url, url):
+        """Decides whether the link is of interest."""
         if this_link is None:
             return
         try:
@@ -108,6 +108,7 @@ class Crawler(object):
                         {str(this_link)}')
 
     def find_links_in_html(self, request, base_url, all_links):
+        """Scraps the request for links."""
         url = request.url
         html_text = request.text
         parsed_url = urlsplit(url)
@@ -128,6 +129,7 @@ class Crawler(object):
                 self.is_link_interesting(this_link, base_url, url)
 
     def thread_crawl(self, base_url, all_links):
+        """This is the function threads execute to perform requests."""
         self.logger.debug(f'Starting thread with base url: {base_url}')
         # Start by opening a session.
         with requests.Session() as s:
@@ -171,10 +173,16 @@ class Crawler(object):
                 sleep(1)
         self.logger.debug('Ending thread.')
 
+    def print_results(self):
+        """Prints results to standard output and file."""
+        self.print_results_to_file(self.endpoints, self.output)
+        self.print_results_to_stdout(self.endpoints)
+
     def print_results_to_stdout(self, local_endpoints_dict):
+        """Prints results to standard output."""
         if not isinstance(local_endpoints_dict, dict):
             self.logger.error('local_endpoints_dict is not a dictionary. ' +
-                              f'Type: {type(local_endpoints_dict)}')
+                              f'Type: {type(local_endpoints_dict)}. Aborting')
             return
 
         for key in local_endpoints_dict.keys():
@@ -183,6 +191,7 @@ class Crawler(object):
                 print(f'\t- {value}')
 
     def print_results_to_file(self, endpoints, output_file_name):
+        """Prints results to file."""
         try:
             with open(output_file_name, 'w') as f:
                 pp = pprint.PrettyPrinter(indent=4, stream=f)
@@ -202,6 +211,7 @@ class Crawler(object):
 def crawler(nthreads=None, url=None, output=None, all_links=None):
     """
     Web crawler starts from URL to all found links under the same netloc.
+    ** param
     """
     # Check if URL is valid
     url = url
