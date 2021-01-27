@@ -2,12 +2,19 @@
 
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/mit)
 
-A simple web crawler. Output is printed and also written to path given in `--output` option.
+A simple web crawler.
+
+Usage
 ```console
-$ python3 crawler.py http://monzo.com/
+$ crawler [--options] URL
 ```
 
-You can use --help to print help message.
+Example:
+```console
+$ crawler --nthreads 10 --output endpoints.json https://monzo.com/
+```
+
+You can use `--help` to print help message.
 ```console
 $ python3 crawler.py --help
 Usage: crawler.py [OPTIONS] URL
@@ -16,27 +23,37 @@ Usage: crawler.py [OPTIONS] URL
 
 Options:
   --nthreads INTEGER  Number of threads.  [default: 5]
-  --output TEXT       Output path.  [default: (endpoints.txt)]
+  --output TEXT       Output path.  [default: (endpoints.json)]
   --all-links         Include all resources.
   --help              Show this message and exit.
 ```
 
-You can setup your virtual python environment with `virtualenv`:
+# Installation
+Install the cli tool using the following command:
+
+```console
+$ python3 setup.py install
+```
+
+# Development
+
+For development of this tool, you need to install the required dependencies. (Use of virtual environments are strongly suggested)
+
 ```console
 $ python3 -m virtualenv venv
 $ source ./venv/bin/activate
 # pip install -r requirements.txt
 ```
 
-To run tests:
+For running the unit tests:
 ```console
-$ python3 test_crawler -v
+(venv) $ python3 -m unittest tests -v
 ```
 
-To do:
+# To do
 - Handle redirects better.
 - Write better tests.
-- Create `setup.py`.
 
+***
 
 Tested with Python 3.8.7 on macOS 10.15.7

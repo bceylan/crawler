@@ -204,14 +204,13 @@ class Crawler(object):
 @click.command()
 @click.option('--nthreads', default=5, help='Number of threads.',
               show_default=5)
-@click.option('--output', default='endpoints.txt',
-              help='Output path.', show_default='endpoints.txt')
+@click.option('--output', default='endpoints.json',
+              help='Output path.', show_default='endpoints.json')
 @click.option('--all-links', help='Include all resources.', is_flag=True)
 @click.argument('url')
 def crawler(nthreads=None, url=None, output=None, all_links=None):
     """
     Web crawler starts from URL to all found links under the same netloc.
-    ** param
     """
     # Check if URL is valid
     url = url
