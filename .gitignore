@@ -185,7 +185,6 @@ dmypy.json
 .envrc
 
 # project related
-endpoints_list.txt
-endpoints_tree.txt
+endpoints.txt
 
 # End of https://www.toptal.com/developers/gitignore/api/git,linux,python,vscode
