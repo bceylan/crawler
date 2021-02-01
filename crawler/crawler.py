@@ -3,7 +3,7 @@ from threading import Thread, Lock
 from queue import Queue
 from urllib.parse import urlsplit
 import pprint
-from time import sleep
+from time import sleep, time
 
 import click
 import requests
@@ -58,10 +58,11 @@ class Crawler(object):
 
         # Create threads.
         crawler_threads = list()
-        for _ in range(int(self.num_threads)):
+        for i in range(int(self.num_threads)):
             crawler_threads.append(Thread(target=self.thread_crawl,
                                           args=(self.base_url,
-                                                self.all_links,)))
+                                                self.all_links,
+                                                i,)))
 
         # Start first thread than wait some time for first crawl to complete.
         # Afterwards start remaining threads.
@@ -128,9 +129,10 @@ class Crawler(object):
                 this_link = link.get('href')
                 self.is_link_interesting(this_link, base_url, url)
 
-    def thread_crawl(self, base_url, all_links):
+    def thread_crawl(self, base_url, all_links, index):
         """This is the function threads execute to perform requests."""
-        self.logger.debug(f'Starting thread with base url: {base_url}')
+        self.logger.debug(f'Starting thread {index} with base url: {base_url}')
+        counter = 0
         # Start by opening a session.
         with requests.Session() as s:
             # Set request retry policy.
@@ -163,6 +165,7 @@ class Crawler(object):
                         r = s.get(url, timeout=REQUESTS_TIMEOUT)
                         r.raise_for_status()
                         self.find_links_in_html(r, base_url, all_links)
+                        counter = counter + 1
                     except Exception as e:
                         self.logger.warning(f'(crawl): {str(e)}')
                 else:
@@ -171,6 +174,7 @@ class Crawler(object):
 
                 # Prevent flooding target web server.
                 sleep(1)
+        self.logger.debug(f'Thread {index} performed {counter} operations.')
         self.logger.debug('Ending thread.')
 
     def print_results(self):
@@ -227,8 +231,13 @@ def crawler(nthreads=None, url=None, output=None, all_links=None):
                       output=output,
                       all_links=all_links)
 
+    start = time()
     crawler.start()
+    end = time()
+
     crawler.print_results()
+
+    print(f'\n\nCrawling took {int(end-start)} seconds.')
 
     return
 
